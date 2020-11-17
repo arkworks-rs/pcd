@@ -107,7 +107,7 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: ark-nonnative-field
+      - name: Check
         run: |
           cargo build --no-default-features --target aarch64-unknown-none
           cargo check --examples --no-default-features --target aarch64-unknown-none
