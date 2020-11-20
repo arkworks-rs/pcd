@@ -1,6 +1,8 @@
 <h1 align="center">Proof-carrying data (PCD)</h1>
 
-This arkworks library describes an interface and contains an implementation for proof-carrying data (PCD). PCD (introduced in [\[CT10\]][CT10]) is a cryptographic primitive that allows the incremental verification of a distributed computation that can continue indefinitely. A computation defined by a (possibly infinite) directed acyclic graph is augmented by attaching a succinct proof of correctness to each message, allowing any intermediate state of the computation to be verified efficiently. PCD is a generalization of IVC [\[Val08\]][Val08], or incrementally-verifiable computation, which is PCD in the case of a linear computation (that is, the graph is a path graph).
+This arkworks library describes an interface and contains an implementation for proof-carrying data (PCD).
+
+PCD (introduced in [\[CT10\]][CT10]) is a cryptographic primitive that allows the incremental verification of a distributed computation that can continue indefinitely. A computation defined by a (possibly infinite) directed acyclic graph is augmented by attaching a succinct proof of correctness to each message, allowing any intermediate state of the computation to be verified efficiently. PCD is a generalization of IVC [\[Val08\]][Val08], or incrementally-verifiable computation, which is PCD in the case of a linear computation (that is, the graph is a path graph).
 
 This library is released under the MIT License and the Apache v2 License (see [License](#license)).
 
