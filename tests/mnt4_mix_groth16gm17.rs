@@ -83,7 +83,7 @@ fn test_mnt4_groth16gm17_pcd() {
     let val_3 = val_1 + &val_2;
 
     let circ = TestPredicate::<Fr>::new();
-    let mut rng = ark_ff::test_rng();
+    let mut rng = ark_std::test_rng();
 
     let (pk, vk) = TestPCD::circuit_specific_setup(&circ, &mut rng).unwrap();
 

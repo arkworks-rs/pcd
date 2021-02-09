@@ -9,8 +9,8 @@ use ark_ec::{models::TEModelParameters, ModelParameters};
 use ark_ff::PrimeField;
 use ark_r1cs_std::{fields::fp::FpVar, prelude::*};
 use ark_relations::r1cs::SynthesisError;
+use ark_std::rand::{CryptoRng, Rng, SeedableRng};
 use ark_std::{vec, vec::Vec};
-use rand::{CryptoRng, Rng, SeedableRng};
 
 pub struct VariableLengthPedersenCRHCompressorGadget<RO, P>
 where
@@ -54,10 +54,10 @@ mod test {
     use crate::variable_length_crh::injective_map::VariableLengthPedersenCRHCompressor;
     use crate::variable_length_crh::VariableLengthCRH;
     use ark_ed_on_bls12_381::{EdwardsParameters as JubJubParameters, Fq as Fr};
-    use ark_ff::test_rng;
     use ark_r1cs_std::prelude::*;
     use ark_relations::r1cs::{ConstraintSystem, ConstraintSystemRef};
-    use rand::Rng;
+    use ark_std::rand::Rng;
+    use ark_std::test_rng;
     use rand_chacha::ChaChaRng;
 
     type TestCRH = VariableLengthPedersenCRHCompressor<ChaChaRng, JubJubParameters>;

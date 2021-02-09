@@ -14,8 +14,8 @@ use ark_r1cs_std::alloc::AllocationMode;
 use ark_r1cs_std::{
     alloc::AllocVar, bits::uint8::UInt8, fields::fp::FpVar, groups::CurveVar, ToBitsGadget,
 };
+use ark_std::rand::{CryptoRng, Rng, SeedableRng};
 use core::{borrow::Borrow, marker::PhantomData};
-use rand::{CryptoRng, Rng, SeedableRng};
 
 pub struct VariableLengthPedersenCRHGadgetParameters {
     pub params: VariableLengthPedersenParameters,
@@ -91,10 +91,10 @@ mod test {
         pedersen::constraints::VariableLengthPedersenCRHGadget, pedersen::VariableLengthPedersenCRH,
     };
     use ark_ed_on_bls12_381::{EdwardsParameters as JubJubParameters, Fq as Fr};
-    use ark_ff::test_rng;
     use ark_r1cs_std::prelude::*;
     use ark_relations::r1cs::{ConstraintSystem, ConstraintSystemRef};
-    use rand::Rng;
+    use ark_std::rand::Rng;
+    use ark_std::test_rng;
     use rand_chacha::ChaChaRng;
 
     type TestCRH = VariableLengthPedersenCRH<ChaChaRng, JubJubParameters>;

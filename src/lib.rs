@@ -7,8 +7,8 @@ use ark_r1cs_std::alloc::AllocVar;
 use ark_r1cs_std::bits::boolean::Boolean;
 use ark_r1cs_std::ToBytesGadget;
 use ark_relations::r1cs::{ConstraintSystemRef, SynthesisError};
+use ark_std::rand::{CryptoRng, RngCore};
 use ark_std::{boxed::Box, fmt::Debug};
-use rand::{CryptoRng, RngCore};
 
 pub type Error = Box<dyn ark_std::error::Error + 'static>;
 

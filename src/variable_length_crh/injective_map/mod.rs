@@ -7,8 +7,8 @@ use crate::{
 };
 use ark_ec::models::{ModelParameters, TEModelParameters};
 use ark_ff::PrimeField;
+use ark_std::rand::{CryptoRng, Rng, SeedableRng};
 use ark_std::{marker::PhantomData, vec, vec::Vec};
-use rand::{CryptoRng, Rng, SeedableRng};
 
 pub mod constraints;
 

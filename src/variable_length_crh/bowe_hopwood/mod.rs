@@ -1,4 +1,5 @@
 use crate::Error;
+use ark_std::rand::{CryptoRng, Rng, SeedableRng};
 use ark_std::{
     cfg_chunks,
     fmt::{Debug, Formatter, Result as FmtResult},
@@ -6,7 +7,6 @@ use ark_std::{
     vec,
     vec::Vec,
 };
-use rand::{CryptoRng, Rng, SeedableRng};
 #[cfg(feature = "parallel")]
 use rayon::prelude::*;
 
@@ -174,7 +174,7 @@ mod test {
     use crate::variable_length_crh::bowe_hopwood::VariableLengthBoweHopwoodCompressedCRH;
     use crate::variable_length_crh::VariableLengthCRH;
     use ark_ed_on_bls12_381::EdwardsParameters;
-    use ark_ff::test_rng;
+    use ark_std::test_rng;
     use rand_chacha::ChaChaRng;
 
     type H = VariableLengthBoweHopwoodCompressedCRH<ChaChaRng, EdwardsParameters>;

@@ -135,7 +135,7 @@ impl<
         let default_circ = DefaultCircuit {
             public_input_size: help_public_input.len(),
         };
-        let mut default_rng = ark_ff::test_rng();
+        let mut default_rng = ark_std::test_rng();
         let (default_pk, default_vk) =
             IC::HelpSNARK::circuit_specific_setup(default_circ, &mut default_rng).unwrap();
         let default_proof =
@@ -337,7 +337,7 @@ impl<MainField: PrimeField, HelpField: PrimeField, IC: ECCyclePCDConfig<MainFiel
         let default_circ = DefaultCircuit {
             public_input_size: main_public_input_num_of_field_elements,
         };
-        let mut default_rng = ark_ff::test_rng();
+        let mut default_rng = ark_std::test_rng();
         let (default_pk, _) = <IC::MainSNARK as SNARK<MainField>>::circuit_specific_setup(
             default_circ,
             &mut default_rng,

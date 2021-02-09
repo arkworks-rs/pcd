@@ -1,6 +1,7 @@
 #![allow(clippy::op_ref, clippy::type_complexity)]
+#![cfg(not(ci))]
 
-use ark_ec::CycleEngine;
+use ark_ec::{CurveCycle, PairingEngine, PairingFriendlyCycle};
 use ark_ed_on_mnt4_298::EdwardsParameters;
 use ark_ff::{One, PrimeField};
 use ark_marlin::constraints::snark::{MarlinSNARK, MarlinSNARKGadget};
@@ -29,16 +30,24 @@ use rand_chacha::ChaChaRng;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Mnt46298Cycle;
-impl CycleEngine for Mnt46298Cycle {
-    type E1 = MNT4_298;
-    type E2 = MNT6_298;
+impl CurveCycle for Mnt46298Cycle {
+    type E1 = <MNT4_298 as PairingEngine>::G1Affine;
+    type E2 = <MNT6_298 as PairingEngine>::G1Affine;
+}
+impl PairingFriendlyCycle for Mnt46298Cycle {
+    type Engine1 = MNT4_298;
+    type Engine2 = MNT6_298;
 }
 
 #[derive(Copy, Clone, Debug)]
 pub struct Mnt64298Cycle;
-impl CycleEngine for Mnt64298Cycle {
-    type E1 = MNT6_298;
-    type E2 = MNT4_298;
+impl CurveCycle for Mnt64298Cycle {
+    type E1 = <MNT6_298 as PairingEngine>::G1Affine;
+    type E2 = <MNT4_298 as PairingEngine>::G1Affine;
+}
+impl PairingFriendlyCycle for Mnt64298Cycle {
+    type Engine1 = MNT6_298;
+    type Engine2 = MNT4_298;
 }
 
 type FS4 = FiatShamirAlgebraicSpongeRng<Fr, Fq, PoseidonSponge<Fq>>;
@@ -48,7 +57,6 @@ type PCGadget4 = MarlinKZG10Gadget<Mnt64298Cycle, DensePolynomial<Fr>, MNT4Pairi
 type PCGadget6 = MarlinKZG10Gadget<Mnt46298Cycle, DensePolynomial<Fq>, MNT6PairingVar>;
 
 type FSG4 = FiatShamirAlgebraicSpongeRngVar<Fr, Fq, PoseidonSponge<Fq>, PoseidonSpongeVar<Fq>>;
-
 type FSG6 = FiatShamirAlgebraicSpongeRngVar<Fq, Fr, PoseidonSponge<Fr>, PoseidonSpongeVar<Fr>>;
 
 #[derive(Clone)]
@@ -135,32 +143,28 @@ fn test_marlin_pcd() {
     let val_1 = Fr::one();
 
     let circ = TestPredicate::<Fr>::new();
-    let mut rng = ark_ff::test_rng();
+    let mut rng = ark_std::test_rng();
 
     let (pk, vk) = TestPCD::circuit_specific_setup(&circ, &mut rng).unwrap();
 
     let proof_1 = TestPCD::prove(&pk, &circ, &val_1, &val_1, &[], &[], &mut rng).unwrap();
     assert!(TestPCD::verify::<TestPredicate<Fr>>(&vk, &val_1, &proof_1).unwrap());
 
-    #[cfg(not(ci))]
-    {
-        let val_2 = val_1 + &val_1;
-        let val_3 = val_1 + &val_2;
+    let val_2 = val_1 + &val_1;
+    let val_3 = val_1 + &val_2;
 
-        let proof_2 =
-            TestPCD::prove(&pk, &circ, &val_2, &val_1, &[val_1], &[proof_1], &mut rng).unwrap();
-        assert!(TestPCD::verify::<TestPredicate<Fr>>(&vk, &val_2, &proof_2).unwrap());
+    let proof_2 =
+        TestPCD::prove(&pk, &circ, &val_2, &val_1, &[val_1], &[proof_1], &mut rng).unwrap();
+    assert!(TestPCD::verify::<TestPredicate<Fr>>(&vk, &val_2, &proof_2).unwrap());
 
-        let proof_3 =
-            TestPCD::prove(&pk, &circ, &val_3, &val_1, &[val_2], &[proof_2], &mut rng).unwrap();
-        assert!(TestPCD::verify::<TestPredicate<Fr>>(&vk, &val_3, &proof_3).unwrap());
+    let proof_3 =
+        TestPCD::prove(&pk, &circ, &val_3, &val_1, &[val_2], &[proof_2], &mut rng).unwrap();
+    assert!(TestPCD::verify::<TestPredicate<Fr>>(&vk, &val_3, &proof_3).unwrap());
 
-        assert!(!TestPCD::verify::<TestPredicate<Fr>>(&vk, &val_1, &proof_3).unwrap());
-    }
+    assert!(!TestPCD::verify::<TestPredicate<Fr>>(&vk, &val_1, &proof_3).unwrap());
 }
 
 #[test]
-#[cfg(not(ci))]
 fn test_marlin_universal_pcd() {
     use ark_marlin::constraints::snark::MarlinBound;
     use ark_pcd::UniversalSetupPCD;
@@ -171,7 +175,7 @@ fn test_marlin_universal_pcd() {
     let val_3 = val_1 + &val_2;
 
     let circ = TestPredicate::<Fr>::new();
-    let mut rng = ark_ff::test_rng();
+    let mut rng = ark_std::test_rng();
 
     let bound: <MarlinSNARK<
         Fr,

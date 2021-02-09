@@ -1,7 +1,7 @@
 use crate::Error;
 use ark_ff::{PrimeField, ToBytes};
+use ark_std::rand::{CryptoRng, Rng};
 use ark_std::{hash::Hash, vec::Vec};
-use rand::{CryptoRng, Rng};
 
 pub mod constraints;
 

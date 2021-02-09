@@ -3,12 +3,12 @@ use ark_ec::{
     group::Group, models::TEModelParameters, twisted_edwards_extended::GroupAffine as TEAffine,
 };
 use ark_ff::{PrimeField, ToConstraintField, Zero};
+use ark_std::rand::{CryptoRng, Rng, SeedableRng};
 use ark_std::{
     fmt::{Debug, Formatter, Result as FmtResult},
     marker::PhantomData,
 };
 use ark_std::{vec, vec::Vec};
-use rand::{CryptoRng, Rng, SeedableRng};
 
 pub mod constraints;
 
