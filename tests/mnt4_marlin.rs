@@ -56,7 +56,6 @@ type PCGadget4 = MarlinKZG10Gadget<Mnt64298Cycle, DensePolynomial<Fr>, MNT4Pairi
 type PCGadget6 = MarlinKZG10Gadget<Mnt46298Cycle, DensePolynomial<Fq>, MNT6PairingVar>;
 
 type FSG4 = FiatShamirAlgebraicSpongeRngVar<Fr, Fq, PoseidonSponge<Fq>, PoseidonSpongeVar<Fq>>;
-
 type FSG6 = FiatShamirAlgebraicSpongeRngVar<Fq, Fr, PoseidonSponge<Fr>, PoseidonSpongeVar<Fr>>;
 
 #[derive(Clone)]

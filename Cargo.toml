@@ -43,14 +43,16 @@ ark-marlin = { git = "https://github.com/arkworks-rs/marlin", branch = "constrai
 ark-poly-commit = { git = "https://github.com/arkworks-rs/poly-commit", branch = "constraints", default-features = false, features = [ "r1cs" ] }
 
 tracing = { version = "0.1", default-features = false, features = [ "attributes" ] }
+rayon = { version = "1", optional = true }
 
 ###############################################################################
 
 ################################## Features ###################################
 
 [features]
-default = ["std"]
+default = [ "std" ]
 std = [ "ark-ff/std", "ark-ec/std", "ark-poly/std", "ark-std/std", "ark-serialize/std", "ark-nonnative-field/std", "ark-poly-commit/std", "ark-nonnative-field/std", "ark-marlin/std", "ark-r1cs-std/std", "ark-relations/std", "ark-groth16/std", "ark-gm17/std" ]
+parallel = [ "std", "ark-ff/parallel", "ark-ec/parallel", "ark-poly/parallel", "ark-std/parallel", "rayon", "ark-marlin/parallel", "ark-poly-commit/parallel" ]
 print-trace = [ "bench-utils/print-trace" ]
 
 ###############################################################################
