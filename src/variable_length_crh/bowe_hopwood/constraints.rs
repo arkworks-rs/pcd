@@ -12,7 +12,7 @@ use crate::variable_length_crh::bowe_hopwood::{
 use crate::variable_length_crh::constraints::VariableLengthCRHGadget;
 use ark_r1cs_std::bits::boolean::Boolean;
 use ark_r1cs_std::fields::fp::FpVar;
-use rand::{CryptoRng, Rng, SeedableRng};
+use ark_std::rand::{CryptoRng, Rng, SeedableRng};
 
 #[derive(Default)]
 pub struct VariableLengthBoweHopwoodParametersVar<P: TEModelParameters> {
@@ -122,14 +122,14 @@ where
 
 #[cfg(test)]
 mod test {
-    use rand::Rng;
+    use ark_std::rand::Rng;
 
     use crate::variable_length_crh::bowe_hopwood::constraints::VariableLengthBoweHopwoodCompressedCRHGadget;
     use crate::variable_length_crh::bowe_hopwood::VariableLengthBoweHopwoodCompressedCRH;
     use crate::variable_length_crh::constraints::VariableLengthCRHGadget;
     use crate::variable_length_crh::VariableLengthCRH;
     use ark_ed_on_bls12_381::{EdwardsParameters, Fq as Fr};
-    use ark_ff::test_rng;
+    use ark_std::test_rng;
 
     use ark_r1cs_std::{alloc::AllocVar, uint8::UInt8, R1CSVar};
     use ark_relations::r1cs::{ConstraintSystem, ConstraintSystemRef};

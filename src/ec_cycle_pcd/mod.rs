@@ -16,8 +16,8 @@ use ark_r1cs_std::{
 use ark_relations::r1cs::{
     ConstraintSynthesizer, ConstraintSystem, ConstraintSystemRef, SynthesisError,
 };
+use ark_std::rand::{CryptoRng, Rng, RngCore};
 use ark_std::{boxed::Box, marker::PhantomData, vec::Vec};
-use rand::{CryptoRng, Rng, RngCore};
 
 pub mod data_structures;
 

@@ -26,7 +26,7 @@ ark-crypto-primitives = { git = "https://github.com/arkworks-rs/crypto-primitive
 
 ark-r1cs-std = { git = "https://github.com/arkworks-rs/r1cs-std", default-features = false }
 
-ark-nonnative-field = { git = "https://github.com/arkworks-rs/nonnative", default-features = false, features = [ "density-optimized" ] }
+ark-nonnative-field = { git = "https://github.com/arkworks-rs/nonnative", default-features = false }
 ark-snark = { git = "https://github.com/arkworks-rs/snark", default-features = false }
 
 ark-ed-on-mnt4-298 = { git = "https://github.com/arkworks-rs/curves", default-features = false }
@@ -34,17 +34,15 @@ ark-ed-on-bls12-381 = { git = "https://github.com/arkworks-rs/curves", default-f
 ark-mnt4-298 = { git = "https://github.com/arkworks-rs/curves", default-features = false, features = [ "curve", "r1cs" ] }
 ark-mnt6-298 = { git = "https://github.com/arkworks-rs/curves", default-features = false, features = [ "r1cs" ] }
 
-rand = { version = "0.7", default-features = false  }
 rand_chacha = { version = "0.2.1", default-features = false }
 derivative = { version = "2.0", features = ["use_core"] }
 
 ark-groth16 = { git = "https://github.com/arkworks-rs/groth16", features = [ "r1cs" ], default-features = false }
 ark-gm17 = { git = "https://github.com/arkworks-rs/gm17", features = [ "r1cs" ], default-features = false }
-ark-marlin = { git = "https://github.com/arkworks-rs/marlin", branch = "constraints", default-features = false, features = [ "density-optimized" ] }
-ark-poly-commit = { git = "https://github.com/arkworks-rs/poly-commit", branch = "constraints", default-features = false, features = [ "r1cs", "density-optimized" ] }
+ark-marlin = { git = "https://github.com/arkworks-rs/marlin", branch = "constraints", default-features = false }
+ark-poly-commit = { git = "https://github.com/arkworks-rs/poly-commit", branch = "constraints", default-features = false, features = [ "r1cs" ] }
 
-[dev-dependencies]
-rand_xorshift = { version = "0.2" }
+tracing = { version = "0.1", default-features = false, features = [ "attributes" ] }
 
 ###############################################################################
 

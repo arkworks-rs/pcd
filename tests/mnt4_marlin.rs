@@ -1,6 +1,6 @@
 #![allow(clippy::op_ref, clippy::type_complexity)]
 
-use ark_ec::CycleEngine;
+use ark_ec::{CurveCycle, PairingEngine, PairingFriendlyCycle};
 use ark_ed_on_mnt4_298::EdwardsParameters;
 use ark_ff::{One, PrimeField};
 use ark_marlin::constraints::snark::{MarlinSNARK, MarlinSNARKGadget};
@@ -29,16 +29,24 @@ use rand_chacha::ChaChaRng;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Mnt46298Cycle;
-impl CycleEngine for Mnt46298Cycle {
-    type E1 = MNT4_298;
-    type E2 = MNT6_298;
+impl CurveCycle for Mnt46298Cycle {
+    type E1 = <MNT4_298 as PairingEngine>::G1Affine;
+    type E2 = <MNT6_298 as PairingEngine>::G1Affine;
+}
+impl PairingFriendlyCycle for Mnt46298Cycle {
+    type Engine1 = MNT4_298;
+    type Engine2 = MNT6_298;
 }
 
 #[derive(Copy, Clone, Debug)]
 pub struct Mnt64298Cycle;
-impl CycleEngine for Mnt64298Cycle {
-    type E1 = MNT6_298;
-    type E2 = MNT4_298;
+impl CurveCycle for Mnt64298Cycle {
+    type E1 = <MNT6_298 as PairingEngine>::G1Affine;
+    type E2 = <MNT4_298 as PairingEngine>::G1Affine;
+}
+impl PairingFriendlyCycle for Mnt64298Cycle {
+    type Engine1 = MNT6_298;
+    type Engine2 = MNT4_298;
 }
 
 type FS4 = FiatShamirAlgebraicSpongeRng<Fr, Fq, PoseidonSponge<Fq>>;
@@ -135,7 +143,7 @@ fn test_marlin_pcd() {
     let val_1 = Fr::one();
 
     let circ = TestPredicate::<Fr>::new();
-    let mut rng = ark_ff::test_rng();
+    let mut rng = ark_std::test_rng();
 
     let (pk, vk) = TestPCD::circuit_specific_setup(&circ, &mut rng).unwrap();
 
@@ -171,7 +179,7 @@ fn test_marlin_universal_pcd() {
     let val_3 = val_1 + &val_2;
 
     let circ = TestPredicate::<Fr>::new();
-    let mut rng = ark_ff::test_rng();
+    let mut rng = ark_std::test_rng();
 
     let bound: <MarlinSNARK<
         Fr,
