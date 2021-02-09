@@ -1,5 +1,4 @@
 #![allow(clippy::op_ref, clippy::type_complexity)]
-#![cfg(not(ci))]
 
 use ark_ed_on_mnt4_298::EdwardsParameters;
 use ark_ff::{One, PrimeField};
@@ -89,29 +88,32 @@ fn test_mnt4_groth16_pcd() {
     let proof_1 = TestPCD::prove(&pk, &circ, &val_1, &val_1, &[], &[], &mut rng).unwrap();
     assert!(TestPCD::verify::<TestPredicate<Fr>>(&vk, &val_1, &proof_1).unwrap());
 
-    let proof_2 = TestPCD::prove(
-        &pk,
-        &circ,
-        &val_2,
-        &val_1,
-        &[val_1],
-        &vec![proof_1],
-        &mut rng,
-    )
-    .unwrap();
-    assert!(TestPCD::verify::<TestPredicate<Fr>>(&vk, &val_2, &proof_2).unwrap());
+    #[cfg(not(ci))]
+    {
+        let proof_2 = TestPCD::prove(
+            &pk,
+            &circ,
+            &val_2,
+            &val_1,
+            &[val_1],
+            &vec![proof_1],
+            &mut rng,
+        )
+        .unwrap();
+        assert!(TestPCD::verify::<TestPredicate<Fr>>(&vk, &val_2, &proof_2).unwrap());
 
-    let proof_3 = TestPCD::prove(
-        &pk,
-        &circ,
-        &val_3,
-        &val_1,
-        &[val_2],
-        &vec![proof_2],
-        &mut rng,
-    )
-    .unwrap();
-    assert!(TestPCD::verify::<TestPredicate<Fr>>(&vk, &val_3, &proof_3).unwrap());
+        let proof_3 = TestPCD::prove(
+            &pk,
+            &circ,
+            &val_3,
+            &val_1,
+            &[val_2],
+            &vec![proof_2],
+            &mut rng,
+        )
+        .unwrap();
+        assert!(TestPCD::verify::<TestPredicate<Fr>>(&vk, &val_3, &proof_3).unwrap());
 
-    assert!(!TestPCD::verify::<TestPredicate<Fr>>(&vk, &val_1, &proof_3).unwrap());
+        assert!(!TestPCD::verify::<TestPredicate<Fr>>(&vk, &val_1, &proof_3).unwrap());
+    }
 }

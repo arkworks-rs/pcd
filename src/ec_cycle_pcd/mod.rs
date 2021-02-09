@@ -14,7 +14,7 @@ use ark_r1cs_std::{
     alloc::AllocVar, bits::boolean::Boolean, fields::fp::FpVar, prelude::*, R1CSVar,
 };
 use ark_relations::r1cs::{
-    ConstraintSynthesizer, ConstraintSystem, ConstraintSystemRef, SynthesisError,
+    ConstraintSynthesizer, ConstraintSystem, ConstraintSystemRef, OptimizationGoal, SynthesisError,
 };
 use ark_std::rand::{CryptoRng, Rng, RngCore};
 use ark_std::{boxed::Box, marker::PhantomData, vec::Vec};
@@ -103,9 +103,11 @@ impl<MainField: PrimeField, HelpField: PrimeField, IC: ECCyclePCDConfig<MainFiel
          ** To avoid issues when the verifying key's native has different ToBytes compared with the gadgets',
          ** here we simulate the computation inside the gadget
          */
-        let tcs_sys = ConstraintSystem::<MainField>::new();
-        let tcs = ConstraintSystemRef::new(tcs_sys);
         let input_hash = {
+            let tcs_sys = ConstraintSystem::<MainField>::new();
+            let tcs = ConstraintSystemRef::new(tcs_sys);
+            tcs.set_optimization_goal(OptimizationGoal::Weight);
+
             let help_vk_gadget = <IC::HelpSNARKGadget as SNARKGadget<
                 HelpField,
                 MainField,
@@ -188,9 +190,11 @@ impl<MainField: PrimeField, HelpField: PrimeField, IC: ECCyclePCDConfig<MainFiel
          ** To avoid issues when the verifying key's native has different ToBytes compared with the gadgets',
          ** here we simulate the computation inside the gadget
          */
-        let tcs_sys = ConstraintSystem::<MainField>::new();
-        let tcs = ConstraintSystemRef::new(tcs_sys);
         let input_hash = {
+            let tcs_sys = ConstraintSystem::<MainField>::new();
+            let tcs = ConstraintSystemRef::new(tcs_sys);
+            tcs.set_optimization_goal(OptimizationGoal::Weight);
+
             let help_vk_gadget = <IC::HelpSNARKGadget as SNARKGadget<
                 HelpField,
                 MainField,

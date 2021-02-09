@@ -1,4 +1,5 @@
 #![allow(clippy::op_ref, clippy::type_complexity)]
+#![cfg(not(ci))]
 
 use ark_ec::{CurveCycle, PairingEngine, PairingFriendlyCycle};
 use ark_ed_on_mnt4_298::EdwardsParameters;
@@ -149,25 +150,21 @@ fn test_marlin_pcd() {
     let proof_1 = TestPCD::prove(&pk, &circ, &val_1, &val_1, &[], &[], &mut rng).unwrap();
     assert!(TestPCD::verify::<TestPredicate<Fr>>(&vk, &val_1, &proof_1).unwrap());
 
-    #[cfg(not(ci))]
-    {
-        let val_2 = val_1 + &val_1;
-        let val_3 = val_1 + &val_2;
+    let val_2 = val_1 + &val_1;
+    let val_3 = val_1 + &val_2;
 
-        let proof_2 =
-            TestPCD::prove(&pk, &circ, &val_2, &val_1, &[val_1], &[proof_1], &mut rng).unwrap();
-        assert!(TestPCD::verify::<TestPredicate<Fr>>(&vk, &val_2, &proof_2).unwrap());
+    let proof_2 =
+        TestPCD::prove(&pk, &circ, &val_2, &val_1, &[val_1], &[proof_1], &mut rng).unwrap();
+    assert!(TestPCD::verify::<TestPredicate<Fr>>(&vk, &val_2, &proof_2).unwrap());
 
-        let proof_3 =
-            TestPCD::prove(&pk, &circ, &val_3, &val_1, &[val_2], &[proof_2], &mut rng).unwrap();
-        assert!(TestPCD::verify::<TestPredicate<Fr>>(&vk, &val_3, &proof_3).unwrap());
+    let proof_3 =
+        TestPCD::prove(&pk, &circ, &val_3, &val_1, &[val_2], &[proof_2], &mut rng).unwrap();
+    assert!(TestPCD::verify::<TestPredicate<Fr>>(&vk, &val_3, &proof_3).unwrap());
 
-        assert!(!TestPCD::verify::<TestPredicate<Fr>>(&vk, &val_1, &proof_3).unwrap());
-    }
+    assert!(!TestPCD::verify::<TestPredicate<Fr>>(&vk, &val_1, &proof_3).unwrap());
 }
 
 #[test]
-#[cfg(not(ci))]
 fn test_marlin_universal_pcd() {
     use ark_marlin::constraints::snark::MarlinBound;
     use ark_pcd::UniversalSetupPCD;
