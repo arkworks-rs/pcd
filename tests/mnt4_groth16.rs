@@ -77,7 +77,6 @@ type TestPCD = ECCyclePCD<Fr, Fq, PCDGroth16Mnt4>;
 #[test]
 fn test_mnt4_groth16_pcd() {
     let val_1 = Fr::one();
-    let val_2 = val_1 + &val_1;
 
     let circ = TestPredicate::<Fr>::new();
     let mut rng = ark_std::test_rng();
@@ -89,6 +88,8 @@ fn test_mnt4_groth16_pcd() {
 
     #[cfg(not(ci))]
     {
+        let val_2 = val_1 + &val_1;
+
         let proof_2 = TestPCD::prove(
             &pk,
             &circ,
