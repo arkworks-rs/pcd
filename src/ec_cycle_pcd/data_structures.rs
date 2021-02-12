@@ -155,8 +155,10 @@ impl<
             HelpField,
             MainField,
             IC::HelpSNARK,
-        >>::VerifyingKeyVar::new_witness(
-            ark_relations::ns!(cs, "alloc#vk"), || Ok(help_vk)
+        >>::new_verification_key_unchecked(
+            ark_relations::ns!(cs, "alloc#vk"),
+            || Ok(help_vk),
+            AllocationMode::Witness,
         )?;
 
         let msg = self.msg.unwrap_or_default();
