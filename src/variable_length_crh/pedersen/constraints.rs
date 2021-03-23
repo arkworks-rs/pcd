@@ -33,7 +33,7 @@ pub struct VariableLengthPedersenCRHGadget<RO: Rng + CryptoRng + SeedableRng, P:
 {
     #[doc(hidden)]
     pub ro_phantom: PhantomData<RO>,
-    #[doc(hideen)]
+    #[doc(hidden)]
     pub te_parameters_phantom: PhantomData<P>,
 }
 
