@@ -12,6 +12,9 @@ use ark_sponge::Absorbable;
 use ark_std::rand::{CryptoRng, RngCore};
 use ark_std::{boxed::Box, fmt::Debug};
 
+#[macro_use]
+extern crate derivative;
+
 pub type Error = Box<dyn ark_std::error::Error + 'static>;
 
 pub trait PCDPredicate<F: PrimeField>: Clone {
@@ -78,5 +81,190 @@ pub trait UniversalSetupPCD<F: PrimeField>: PCD<F> {
     ) -> Result<(<Self as PCD<F>>::ProvingKey, <Self as PCD<F>>::VerifyingKey), Error>;
 }
 
+/// Common errors that PCD schemes may throw.
+pub mod error;
+
 pub mod ec_cycle_pcd;
 pub mod variable_length_crh;
+
+/// A PCD that does not rely on SNARKs but instead builds on an R1CS NARK construction and its
+/// accumulation scheme.
+/// The implementation is based on the construction detailed in Section 5 of [\[BCLMS20\]][bclms20].
+///
+/// [bclms20]: https://eprint.iacr.org/2020/1618
+pub mod r1cs_nark_pcd;
+
+#[cfg(test)]
+pub mod tests {
+    use crate::{PCDPredicate, PCD};
+    use ark_ff::PrimeField;
+    use ark_r1cs_std::bits::boolean::Boolean;
+    use ark_r1cs_std::eq::EqGadget;
+    use ark_r1cs_std::fields::fp::FpVar;
+    use ark_relations::r1cs::{ConstraintSystemRef, SynthesisError};
+    use ark_sponge::Absorbable;
+    use ark_std::marker::PhantomData;
+
+    #[derive(Clone)]
+    pub struct TestIVCPredicate<F: PrimeField + Absorbable<F>> {
+        pub field_phantom: PhantomData<F>,
+    }
+
+    impl<F: PrimeField + Absorbable<F>> TestIVCPredicate<F> {
+        fn new() -> Self {
+            Self {
+                field_phantom: PhantomData,
+            }
+        }
+    }
+
+    impl<F: PrimeField + Absorbable<F>> PCDPredicate<F> for TestIVCPredicate<F> {
+        type Message = F;
+        type MessageVar = FpVar<F>;
+        type LocalWitness = F;
+        type LocalWitnessVar = FpVar<F>;
+
+        const PRIOR_MSG_LEN: usize = 1;
+
+        fn generate_constraints(
+            &self,
+            _cs: ConstraintSystemRef<F>,
+            msg: &Self::MessageVar,
+            witness: &Self::LocalWitnessVar,
+            prior_msgs: &[Self::MessageVar],
+            _base_case: &Boolean<F>,
+        ) -> Result<(), SynthesisError> {
+            let msg_supposed = &prior_msgs[0] + witness;
+            msg_supposed.enforce_equal(&msg)?;
+
+            Ok(())
+        }
+    }
+
+    #[derive(Clone)]
+    pub struct TestPCDPredicate<F: PrimeField + Absorbable<F>> {
+        pub field_phantom: PhantomData<F>,
+    }
+
+    impl<F: PrimeField + Absorbable<F>> TestPCDPredicate<F> {
+        fn new() -> Self {
+            Self {
+                field_phantom: PhantomData,
+            }
+        }
+    }
+
+    impl<F: PrimeField + Absorbable<F>> PCDPredicate<F> for TestPCDPredicate<F> {
+        type Message = F;
+        type MessageVar = FpVar<F>;
+        type LocalWitness = F;
+        type LocalWitnessVar = FpVar<F>;
+
+        const PRIOR_MSG_LEN: usize = 2;
+
+        fn generate_constraints(
+            &self,
+            _cs: ConstraintSystemRef<F>,
+            msg: &Self::MessageVar,
+            witness: &Self::LocalWitnessVar,
+            prior_msgs: &[Self::MessageVar],
+            _base_case: &Boolean<F>,
+        ) -> Result<(), SynthesisError> {
+            let msg_supposed = &prior_msgs[0] + &prior_msgs[1] + witness;
+            msg_supposed.enforce_equal(&msg)?;
+
+            Ok(())
+        }
+    }
+
+    pub fn test_ivc_base_case<F: PrimeField + Absorbable<F>, TestPCD: PCD<F>>() {
+        let mut rng = ark_std::test_rng();
+
+        let witness = F::one();
+        let msg_0 = F::one();
+
+        let circ = TestIVCPredicate::<F>::new();
+        let (pk, vk) = TestPCD::circuit_specific_setup(&circ, &mut rng).unwrap();
+
+        let proof_0 = TestPCD::prove(&pk, &circ, &msg_0, &witness, &[], &[], &mut rng).unwrap();
+        assert!(TestPCD::verify::<TestIVCPredicate<F>>(&vk, &msg_0, &proof_0).unwrap());
+    }
+
+    pub fn test_ivc<F: PrimeField + Absorbable<F>, TestPCD: PCD<F>>() {
+        let mut rng = ark_std::test_rng();
+
+        let witness = F::one();
+        let msg_0 = F::one();
+        let msg_1 = msg_0 + &witness;
+        let msg_2 = msg_1 + &witness;
+
+        let circ = TestIVCPredicate::<F>::new();
+        let (pk, vk) = TestPCD::circuit_specific_setup(&circ, &mut rng).unwrap();
+
+        let proof_0 = TestPCD::prove(&pk, &circ, &msg_0, &witness, &[], &[], &mut rng).unwrap();
+        assert!(TestPCD::verify::<TestIVCPredicate<F>>(&vk, &msg_0, &proof_0).unwrap());
+
+        let proof_1 = TestPCD::prove(
+            &pk,
+            &circ,
+            &msg_1,
+            &witness,
+            &[msg_0],
+            &vec![proof_0],
+            &mut rng,
+        )
+        .unwrap();
+        assert!(TestPCD::verify::<TestIVCPredicate<F>>(&vk, &msg_1, &proof_1).unwrap());
+
+        let proof_2 = TestPCD::prove(
+            &pk,
+            &circ,
+            &msg_2,
+            &witness,
+            &[msg_1],
+            &vec![proof_1],
+            &mut rng,
+        )
+        .unwrap();
+        assert!(TestPCD::verify::<TestIVCPredicate<F>>(&vk, &msg_2, &proof_2).unwrap());
+    }
+
+    pub fn test_pcd<F: PrimeField + Absorbable<F>, TestPCD: PCD<F>>() {
+        let mut rng = ark_std::test_rng();
+
+        let witness = F::one();
+        let msg_0 = F::one();
+        let msg_1 = msg_0 + &msg_0 + &witness;
+        let msg_2 = msg_1 + &msg_1 + &witness;
+
+        let circ = TestPCDPredicate::<F>::new();
+        let (pk, vk) = TestPCD::circuit_specific_setup(&circ, &mut rng).unwrap();
+
+        let proof_0 = TestPCD::prove(&pk, &circ, &msg_0, &witness, &[], &[], &mut rng).unwrap();
+        assert!(TestPCD::verify::<TestPCDPredicate<F>>(&vk, &msg_0, &proof_0).unwrap());
+
+        let proof_1 = TestPCD::prove(
+            &pk,
+            &circ,
+            &msg_1,
+            &witness,
+            &[msg_0, msg_0],
+            &vec![proof_0.clone(), proof_0],
+            &mut rng,
+        )
+        .unwrap();
+        assert!(TestPCD::verify::<TestPCDPredicate<F>>(&vk, &msg_1, &proof_1).unwrap());
+
+        let proof_2 = TestPCD::prove(
+            &pk,
+            &circ,
+            &msg_2,
+            &witness,
+            &[msg_1, msg_1],
+            &vec![proof_1.clone(), proof_1],
+            &mut rng,
+        )
+        .unwrap();
+        assert!(TestPCD::verify::<TestPCDPredicate<F>>(&vk, &msg_2, &proof_2).unwrap());
+    }
+}
