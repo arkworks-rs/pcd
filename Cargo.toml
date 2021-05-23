@@ -25,8 +25,10 @@ ark-crypto-primitives = { version = "^0.2.0", default-features = false, features
 
 ark-r1cs-std = { version = "^0.2.0", default-features = false }
 
-ark-nonnative-field = { version = "^0.2.0", default-features = false }
+ark-nonnative-field = { git = "https://github.com/arkworks-rs/nonnative", default-features = false }
 ark-snark = { version = "^0.2.0", default-features = false }
+
+ark-sponge = { git = "https://github.com/arkworks-rs/sponge/", branch = "accumulation-experimental", default-features = false, features = [ "r1cs" ] }
 
 ark-ed-on-mnt4-298 = { version = "^0.2.0", default-features = false }
 ark-ed-on-bls12-381 = { version = "^0.2.0", default-features = false }

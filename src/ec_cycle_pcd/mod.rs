@@ -16,6 +16,7 @@ use ark_r1cs_std::{
 use ark_relations::r1cs::{
     ConstraintSynthesizer, ConstraintSystem, ConstraintSystemRef, OptimizationGoal, SynthesisError,
 };
+use ark_sponge::Absorbable;
 use ark_std::rand::{CryptoRng, Rng, RngCore};
 use ark_std::{boxed::Box, marker::PhantomData, vec::Vec};
 
@@ -253,12 +254,15 @@ where
 {
 }
 
-pub struct BoundTestingPredicate<F: PrimeField, BoundCircuit: ConstraintSynthesizer<F> + Clone> {
+pub struct BoundTestingPredicate<
+    F: PrimeField + Absorbable<F>,
+    BoundCircuit: ConstraintSynthesizer<F> + Clone,
+> {
     pub bound_circuit: BoundCircuit,
     pub field_phantom: PhantomData<F>,
 }
 
-impl<F: PrimeField, BoundCircuit: ConstraintSynthesizer<F> + Clone> Clone
+impl<F: PrimeField + Absorbable<F>, BoundCircuit: ConstraintSynthesizer<F> + Clone> Clone
     for BoundTestingPredicate<F, BoundCircuit>
 {
     fn clone(&self) -> Self {
@@ -269,7 +273,7 @@ impl<F: PrimeField, BoundCircuit: ConstraintSynthesizer<F> + Clone> Clone
     }
 }
 
-impl<F: PrimeField, BoundCircuit: ConstraintSynthesizer<F> + Clone> PCDPredicate<F>
+impl<F: PrimeField + Absorbable<F>, BoundCircuit: ConstraintSynthesizer<F> + Clone> PCDPredicate<F>
     for BoundTestingPredicate<F, BoundCircuit>
 {
     type Message = F;
@@ -301,9 +305,11 @@ impl<F: PrimeField, BoundCircuit: ConstraintSynthesizer<F> + Clone> PCDPredicate
     }
 }
 
-impl<MainField: PrimeField, HelpField: PrimeField, IC: ECCyclePCDConfig<MainField, HelpField>>
-    UniversalSetupPCD<MainField> for ECCyclePCD<MainField, HelpField, IC>
+impl<MainField, HelpField, IC> UniversalSetupPCD<MainField> for ECCyclePCD<MainField, HelpField, IC>
 where
+    MainField: PrimeField + Absorbable<MainField>,
+    HelpField: PrimeField + Absorbable<HelpField>,
+    IC: ECCyclePCDConfig<MainField, HelpField>,
     IC::MainSNARK: UniversalSetupSNARK<MainField>,
     IC::HelpSNARK: UniversalSetupSNARK<HelpField>,
     IC::MainSNARKGadget: UniversalSetupSNARKGadget<MainField, HelpField, IC::MainSNARK>,
