@@ -157,9 +157,7 @@ where
                 || main_old_accumulator_instances.as_ref().unwrap().len() == P::PRIOR_MSG_LEN
         );
 
-        /*
-         * Process the inputs
-         */
+        // Process the inputs
 
         let base_case = main_input_instances.is_none();
         let main_circuit_input_len = MainCircuit::<E, PC, P>::public_input_size();
@@ -190,9 +188,7 @@ where
             );
         };
 
-        /*
-         * Allocation
-         */
+        //  Allocation
 
         let claimed_input_hash_var = FpVar::new_input(ns!(cs, "alloc_claimed_input_hash"), || {
             Ok(claimed_input_hash)
@@ -237,9 +233,7 @@ where
                 || Ok(main_accumulation_proof),
             )?;
 
-        /*
-         * Verification
-         */
+        // Verification
 
         let input_hash_var: FpVar<HelpField<E>> = Self::compute_hash_var(
             ns!(cs, "input_hash_sponge").cs(),

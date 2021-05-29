@@ -181,9 +181,7 @@ where
                 || help_old_accumulator_instances.as_ref().unwrap().len() == P::PRIOR_MSG_LEN
         );
 
-        /*
-         * Process the inputs
-         */
+        // Process the inputs
 
         let base_case = help_input_instances.is_none();
         let help_circuit_input_len = HelpCircuit::<E, PC, P>::public_input_size();
@@ -217,9 +215,7 @@ where
         let claimed_input_hash: MainField<E> =
             Self::compute_hash(&help_avk, &help_new_accumulator_instance, &msg);
 
-        /*
-         * Allocation
-         */
+        // Allocation
 
         let claimed_input_hash_var = FpVar::new_input(ns!(cs, "alloc_claimed_input_hash"), || {
             Ok(claimed_input_hash)
@@ -276,9 +272,7 @@ where
                 || Ok(help_accumulation_proof),
             )?;
 
-        /*
-         * Verification
-         */
+        // Verification
 
         predicate.generate_constraints(
             ark_relations::ns!(cs, "check_predicate").cs(),
