@@ -13,35 +13,35 @@ edition = "2018"
 ################################# Dependencies ################################
 
 [dependencies]
-ark-serialize = { version = "^0.2.0", default-features = false, features = [ "derive" ] }
-ark-ff = { version = "^0.2.0", default-features = false }
-ark-ec = { version = "^0.2.0", default-features = false }
-ark-poly = { version = "^0.2.0", default-features = false }
+ark-serialize = { version = "^0.3.0", default-features = false, features = [ "derive" ] }
+ark-ff = { version = "^0.3.0", default-features = false }
+ark-ec = { version = "^0.3.0", default-features = false }
+ark-poly = { version = "^0.3.0", default-features = false }
 
-ark-std = { version = "^0.2.0", default-features = false }
+ark-std = { version = "^0.3.0", default-features = false }
 
-ark-relations = { version = "^0.2.0", default-features = false }
-ark-crypto-primitives = { version = "^0.2.0", default-features = false, features = [ "r1cs" ] }
+ark-relations = { version = "^0.3.0", default-features = false }
+ark-crypto-primitives = { version = "^0.3.0", default-features = false, features = [ "r1cs" ] }
 
-ark-r1cs-std = { version = "^0.2.0", default-features = false }
+ark-r1cs-std = { version = "^0.3.0", default-features = false }
 
 ark-nonnative-field = { git = "https://github.com/arkworks-rs/nonnative", default-features = false }
-ark-snark = { version = "^0.2.0", default-features = false }
+ark-snark = { version = "^0.3.0", default-features = false }
 
-ark-accumulation = { git = "https://github.com/arkworks-rs/accumulation/", branch = "main", default-features = false, features = [ "r1cs-nark-as", "r1cs" ] }
-ark-sponge = { git = "https://github.com/arkworks-rs/sponge/", branch = "accumulation-experimental", default-features = false, features = [ "r1cs" ] }
+ark-accumulation = { git = "https://github.com/arkworks-rs/accumulation/", branch = "upgrade-to-0.3", default-features = false, features = [ "r1cs-nark-as", "r1cs" ] }
+ark-sponge = { version = "^0.3.0", default-features = false, features = [ "r1cs" ] }
 
-ark-ed-on-mnt4-298 = { version = "^0.2.0", default-features = false }
-ark-ed-on-bls12-381 = { version = "^0.2.0", default-features = false }
-ark-mnt4-298 = { version = "^0.2.0", default-features = false, features = [ "curve", "r1cs" ] }
-ark-mnt6-298 = { version = "^0.2.0", default-features = false, features = [ "r1cs" ] }
+ark-ed-on-mnt4-298 = { version = "^0.3.0", default-features = false }
+ark-ed-on-bls12-381 = { version = "^0.3.0", default-features = false }
+ark-mnt4-298 = { version = "^0.3.0", default-features = false, features = [ "curve", "r1cs" ] }
+ark-mnt6-298 = { version = "^0.3.0", default-features = false, features = [ "r1cs" ] }
 
-rand_chacha = { version = "0.2.1", default-features = false }
+rand_chacha = { version = "0.3.1", default-features = false }
 derivative = { version = "2.0", features = ["use_core"] }
 
-ark-groth16 = { version = "^0.2.0", features = [ "r1cs" ], default-features = false }
-ark-gm17 = { version = "^0.2.0", features = [ "r1cs" ], default-features = false }
-ark-marlin = { git = "https://github.com/arkworks-rs/marlin", branch = "constraints", default-features = false }
+ark-groth16 = { version = "^0.3.0", features = [ "r1cs" ], default-features = false }
+ark-gm17 = { version = "^0.3.0", features = [ "r1cs" ], default-features = false }
+ark-marlin = { git = "https://github.com/arkworks-rs/marlin", branch = "vlopes11/constraints", default-features = false }
 ark-poly-commit = { git = "https://github.com/arkworks-rs/poly-commit", branch = "constraints", default-features = false, features = [ "r1cs" ] }
 
 tracing = { version = "0.1", default-features = false, features = [ "attributes" ] }

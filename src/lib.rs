@@ -7,8 +7,8 @@ use ark_r1cs_std::alloc::AllocVar;
 use ark_r1cs_std::bits::boolean::Boolean;
 use ark_r1cs_std::ToBytesGadget;
 use ark_relations::r1cs::{ConstraintSystemRef, SynthesisError};
-use ark_sponge::constraints::AbsorbableGadget;
-use ark_sponge::Absorbable;
+use ark_sponge::constraints::AbsorbGadget;
+use ark_sponge::Absorb;
 use ark_std::rand::{CryptoRng, RngCore};
 use ark_std::{boxed::Box, fmt::Debug};
 
@@ -18,8 +18,8 @@ extern crate derivative;
 pub type Error = Box<dyn ark_std::error::Error + 'static>;
 
 pub trait PCDPredicate<F: PrimeField>: Clone {
-    type Message: Absorbable<F> + ToBytes + Sized + Clone + Default;
-    type MessageVar: AbsorbableGadget<F> + ToBytesGadget<F> + AllocVar<Self::Message, F>;
+    type Message: Absorb + ToBytes + Sized + Clone + Default;
+    type MessageVar: AbsorbGadget<F> + ToBytesGadget<F> + AllocVar<Self::Message, F>;
 
     type LocalWitness: Sized + Clone + Default;
     type LocalWitnessVar: AllocVar<Self::LocalWitness, F>;

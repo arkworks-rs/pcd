@@ -10,6 +10,7 @@ use ark_accumulation::r1cs_nark_as::constraints::{
 use ark_accumulation::r1cs_nark_as::{AccumulatorInstance, InputInstance};
 use ark_ec::CurveCycle;
 use ark_ff::{PrimeField, Zero};
+use ark_marlin::ahp::{CryptographicSpongeVarNonNative, CryptographicSpongeWithDefault};
 use ark_r1cs_std::alloc::AllocVar;
 use ark_r1cs_std::bits::boolean::Boolean;
 use ark_r1cs_std::eq::EqGadget;
@@ -19,7 +20,7 @@ use ark_relations::r1cs::{
     ConstraintSynthesizer, ConstraintSystem, ConstraintSystemRef, SynthesisError,
 };
 use ark_sponge::constraints::CryptographicSpongeVar;
-use ark_sponge::{absorb, absorb_gadget, Absorbable, CryptographicSponge};
+use ark_sponge::{absorb, absorb_gadget, Absorb, CryptographicSponge};
 use ark_std::marker::PhantomData;
 
 /// A circuit used to verify that the accumulation of arguments about the help circuit was computed
@@ -29,10 +30,10 @@ use ark_std::marker::PhantomData;
 pub(crate) struct MainCircuit<E, PC, P>
 where
     E: CurveCycle,
-    MainField<E>: PrimeField + Absorbable<MainField<E>>,
-    HelpField<E>: PrimeField + Absorbable<HelpField<E>>,
-    MainAffine<E>: Absorbable<HelpField<E>>,
-    HelpAffine<E>: Absorbable<MainField<E>>,
+    MainField<E>: PrimeField + Absorb,
+    HelpField<E>: PrimeField + Absorb,
+    MainAffine<E>: Absorb,
+    HelpAffine<E>: Absorb,
     PC: R1CSNarkPCDConfig<E>,
     P: PCDPredicate<MainField<E>>,
 {
@@ -74,10 +75,10 @@ where
 impl<E, PC, P> MainCircuit<E, PC, P>
 where
     E: CurveCycle,
-    MainField<E>: PrimeField + Absorbable<MainField<E>>,
-    HelpField<E>: PrimeField + Absorbable<HelpField<E>>,
-    MainAffine<E>: Absorbable<HelpField<E>>,
-    HelpAffine<E>: Absorbable<MainField<E>>,
+    MainField<E>: PrimeField + Absorb,
+    HelpField<E>: PrimeField + Absorb,
+    MainAffine<E>: Absorb,
+    HelpAffine<E>: Absorb,
     PC: R1CSNarkPCDConfig<E>,
     P: PCDPredicate<MainField<E>>,
 {
@@ -94,7 +95,8 @@ where
         help_accumulator_instance: &AccumulatorInstance<HelpAffine<E>>,
         msg: &P::Message,
     ) -> MainField<E> {
-        let mut sponge = PC::MainSponge::new();
+        let params = PC::MainSponge::default_params();
+        let mut sponge = PC::MainSponge::new(&params);
         absorb!(&mut sponge, help_avk, help_accumulator_instance, msg);
         sponge.squeeze_field_elements(1).pop().unwrap()
     }
@@ -106,7 +108,8 @@ where
         help_accumulator_instance_var: &AccumulatorInstanceVar<HelpAffine<E>, PC::HelpCurveVar>,
         msg_var: &P::MessageVar,
     ) -> Result<FpVar<MainField<E>>, SynthesisError> {
-        let mut sponge = PC::MainSpongeVar::new(cs);
+        let params = PC::MainSpongeVar::default_params();
+        let mut sponge = PC::MainSpongeVar::new(cs, &params);
         absorb_gadget!(
             &mut sponge,
             help_avk_var,
@@ -136,10 +139,10 @@ where
 impl<E, PC, P> ConstraintSynthesizer<MainField<E>> for MainCircuit<E, PC, P>
 where
     E: CurveCycle,
-    MainField<E>: PrimeField + Absorbable<MainField<E>>,
-    HelpField<E>: PrimeField + Absorbable<HelpField<E>>,
-    MainAffine<E>: Absorbable<HelpField<E>>,
-    HelpAffine<E>: Absorbable<MainField<E>>,
+    MainField<E>: PrimeField + Absorb,
+    HelpField<E>: PrimeField + Absorb,
+    MainAffine<E>: Absorb,
+    HelpAffine<E>: Absorb,
     PC: R1CSNarkPCDConfig<E>,
     P: PCDPredicate<MainField<E>>,
 {
