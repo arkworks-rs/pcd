@@ -25,7 +25,7 @@ use ark_r1cs_std::eq::EqGadget;
 use ark_r1cs_std::fields::fp::FpVar;
 use ark_relations::r1cs::ConstraintSystemRef;
 use ark_relations::r1cs::SynthesisError;
-use ark_sponge::Absorbable;
+use ark_sponge::Absorb;
 use core::marker::PhantomData;
 use rand_chacha::ChaChaRng;
 
@@ -114,7 +114,7 @@ impl<F: PrimeField> Clone for TestPredicate<F> {
     }
 }
 
-impl<F: PrimeField + Absorbable<F>> PCDPredicate<F> for TestPredicate<F> {
+impl<F: PrimeField + Absorb> PCDPredicate<F> for TestPredicate<F> {
     type Message = F;
     type MessageVar = FpVar<F>;
     type LocalWitness = F;

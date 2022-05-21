@@ -102,15 +102,15 @@ pub mod tests {
     use ark_r1cs_std::eq::EqGadget;
     use ark_r1cs_std::fields::fp::FpVar;
     use ark_relations::r1cs::{ConstraintSystemRef, SynthesisError};
-    use ark_sponge::Absorbable;
+    use ark_sponge::Absorb;
     use ark_std::marker::PhantomData;
 
     #[derive(Clone)]
-    pub struct TestIVCPredicate<F: PrimeField + Absorbable<F>> {
+    pub struct TestIVCPredicate<F: PrimeField + Absorb> {
         pub field_phantom: PhantomData<F>,
     }
 
-    impl<F: PrimeField + Absorbable<F>> TestIVCPredicate<F> {
+    impl<F: PrimeField + Absorb> TestIVCPredicate<F> {
         fn new() -> Self {
             Self {
                 field_phantom: PhantomData,
@@ -118,7 +118,7 @@ pub mod tests {
         }
     }
 
-    impl<F: PrimeField + Absorbable<F>> PCDPredicate<F> for TestIVCPredicate<F> {
+    impl<F: PrimeField + Absorb> PCDPredicate<F> for TestIVCPredicate<F> {
         type Message = F;
         type MessageVar = FpVar<F>;
         type LocalWitness = F;
@@ -142,11 +142,11 @@ pub mod tests {
     }
 
     #[derive(Clone)]
-    pub struct TestPCDPredicate<F: PrimeField + Absorbable<F>> {
+    pub struct TestPCDPredicate<F: PrimeField + Absorb> {
         pub field_phantom: PhantomData<F>,
     }
 
-    impl<F: PrimeField + Absorbable<F>> TestPCDPredicate<F> {
+    impl<F: PrimeField + Absorb> TestPCDPredicate<F> {
         fn new() -> Self {
             Self {
                 field_phantom: PhantomData,
@@ -154,7 +154,7 @@ pub mod tests {
         }
     }
 
-    impl<F: PrimeField + Absorbable<F>> PCDPredicate<F> for TestPCDPredicate<F> {
+    impl<F: PrimeField + Absorb> PCDPredicate<F> for TestPCDPredicate<F> {
         type Message = F;
         type MessageVar = FpVar<F>;
         type LocalWitness = F;
@@ -177,7 +177,7 @@ pub mod tests {
         }
     }
 
-    pub fn test_ivc_base_case<F: PrimeField + Absorbable<F>, TestPCD: PCD<F>>() {
+    pub fn test_ivc_base_case<F: PrimeField + Absorb, TestPCD: PCD<F>>() {
         let mut rng = ark_std::test_rng();
 
         let witness = F::one();
@@ -190,7 +190,7 @@ pub mod tests {
         assert!(TestPCD::verify::<TestIVCPredicate<F>>(&vk, &msg_0, &proof_0).unwrap());
     }
 
-    pub fn test_ivc<F: PrimeField + Absorbable<F>, TestPCD: PCD<F>>() {
+    pub fn test_ivc<F: PrimeField + Absorb, TestPCD: PCD<F>>() {
         let mut rng = ark_std::test_rng();
 
         let witness = F::one();
@@ -229,7 +229,7 @@ pub mod tests {
         assert!(TestPCD::verify::<TestIVCPredicate<F>>(&vk, &msg_2, &proof_2).unwrap());
     }
 
-    pub fn test_pcd<F: PrimeField + Absorbable<F>, TestPCD: PCD<F>>() {
+    pub fn test_pcd<F: PrimeField + Absorb, TestPCD: PCD<F>>() {
         let mut rng = ark_std::test_rng();
 
         let witness = F::one();
