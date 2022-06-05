@@ -1,4 +1,4 @@
-use crate::r1cs_nark_pcd::data_structures::{HelpAffine, HelpField, MainAffine, MainField};
+use crate::r1cs_nark_pcd::data_structures::{HelpAffine, HelpField, MainAffine, MainField, SPONGE_RATE};
 use crate::r1cs_nark_pcd::help_circuit::HelpCircuit;
 use crate::r1cs_nark_pcd::{R1CSNarkPCDConfig, MAKE_ZK};
 use crate::PCDPredicate;
@@ -10,7 +10,7 @@ use ark_accumulation::r1cs_nark_as::constraints::{
 use ark_accumulation::r1cs_nark_as::{AccumulatorInstance, InputInstance};
 use ark_ec::CurveCycle;
 use ark_ff::{PrimeField, Zero};
-use ark_marlin::ahp::{CryptographicSpongeVarNonNative, CryptographicSpongeWithDefault};
+use ark_marlin::sponge::{CryptographicSpongeParameters, CryptographicSpongeWithRate};
 use ark_r1cs_std::alloc::AllocVar;
 use ark_r1cs_std::bits::boolean::Boolean;
 use ark_r1cs_std::eq::EqGadget;
@@ -36,6 +36,8 @@ where
     HelpAffine<E>: Absorb,
     PC: R1CSNarkPCDConfig<E>,
     P: PCDPredicate<MainField<E>>,
+    <PC::MainSponge as CryptographicSponge>::Parameters: CryptographicSpongeParameters,
+    <PC::HelpSponge as CryptographicSponge>::Parameters: CryptographicSpongeParameters,
 {
     /// The PCD predicate.
     pub(crate) predicate: P,
@@ -81,6 +83,8 @@ where
     HelpAffine<E>: Absorb,
     PC: R1CSNarkPCDConfig<E>,
     P: PCDPredicate<MainField<E>>,
+    <PC::MainSponge as CryptographicSponge>::Parameters: CryptographicSpongeParameters,
+    <PC::HelpSponge as CryptographicSponge>::Parameters: CryptographicSpongeParameters,
 {
     /// Returns the public input size of the main circuit.
     pub(crate) fn public_input_size() -> usize {
@@ -95,8 +99,7 @@ where
         help_accumulator_instance: &AccumulatorInstance<HelpAffine<E>>,
         msg: &P::Message,
     ) -> MainField<E> {
-        let params = PC::MainSponge::default_params();
-        let mut sponge = PC::MainSponge::new(&params);
+        let mut sponge = PC::MainSponge::from_rate(SPONGE_RATE);
         absorb!(&mut sponge, help_avk, help_accumulator_instance, msg);
         sponge.squeeze_field_elements(1).pop().unwrap()
     }
@@ -108,8 +111,8 @@ where
         help_accumulator_instance_var: &AccumulatorInstanceVar<HelpAffine<E>, PC::HelpCurveVar>,
         msg_var: &P::MessageVar,
     ) -> Result<FpVar<MainField<E>>, SynthesisError> {
-        let params = PC::MainSpongeVar::default_params();
-        let mut sponge = PC::MainSpongeVar::new(cs, &params);
+        let sponge_params = <PC::MainSponge as CryptographicSponge>::Parameters::from_rate(SPONGE_RATE);
+        let mut sponge = PC::MainSpongeVar::new(cs, &sponge_params);
         absorb_gadget!(
             &mut sponge,
             help_avk_var,
@@ -145,6 +148,8 @@ where
     HelpAffine<E>: Absorb,
     PC: R1CSNarkPCDConfig<E>,
     P: PCDPredicate<MainField<E>>,
+    <PC::MainSponge as CryptographicSponge>::Parameters: CryptographicSpongeParameters,
+    <PC::HelpSponge as CryptographicSponge>::Parameters: CryptographicSpongeParameters,
 {
     fn generate_constraints(
         self,

@@ -7,10 +7,11 @@ use ark_accumulation::{
 };
 use ark_ec::CurveCycle;
 use ark_ff::PrimeField;
-use ark_marlin::ahp::{CryptographicSpongeVarNonNative, CryptographicSpongeWithDefault};
+use ark_marlin::CryptographicSpongeParameters;
+use ark_marlin::sponge::{CryptographicSpongeWithRate};
 use ark_r1cs_std::groups::CurveVar;
 use ark_sponge::constraints::AbsorbGadget;
-use ark_sponge::{Absorb, CryptographicSponge};
+use ark_sponge::{Absorb, CryptographicSponge, constraints::CryptographicSpongeVar};
 use ark_std::marker::PhantomData;
 use ark_std::rand::{CryptoRng, Rng};
 use help_circuit::HelpCircuit;
@@ -38,6 +39,8 @@ where
     HelpField<E>: PrimeField + Absorb,
     MainAffine<E>: Absorb,
     HelpAffine<E>: Absorb,
+    <Self::MainSponge as CryptographicSponge>::Parameters: CryptographicSpongeParameters,
+    <Self::HelpSponge as CryptographicSponge>::Parameters: CryptographicSpongeParameters,
 {
     /// The curve var for the main affine.
     type MainCurveVar: CurveVar<MainProjective<E>, HelpField<E>> + AbsorbGadget<HelpField<E>>;
@@ -46,24 +49,16 @@ where
     type HelpCurveVar: CurveVar<HelpProjective<E>, MainField<E>> + AbsorbGadget<MainField<E>>;
 
     /// The sponge that the main circuit uses.
-    type MainSponge: CryptographicSpongeWithDefault;
+    type MainSponge: CryptographicSpongeWithRate;
 
     /// The sponge var that the main circuit uses.
-    type MainSpongeVar: CryptographicSpongeVarNonNative<
-        HelpField<E>,
-        MainField<E>,
-        Self::MainSponge,
-    >;
+    type MainSpongeVar: CryptographicSpongeVar<MainField<E>, Self::MainSponge, Parameters = <Self::MainSponge as CryptographicSponge>::Parameters>;
 
     /// The sponge that the help circuit uses.
-    type HelpSponge: CryptographicSpongeWithDefault;
+    type HelpSponge: CryptographicSpongeWithRate;
 
     /// The sponge var that the help circuit uses.
-    type HelpSpongeVar: CryptographicSpongeVarNonNative<
-        MainField<E>,
-        HelpField<E>,
-        Self::HelpSponge,
-    >;
+    type HelpSpongeVar: CryptographicSpongeVar<HelpField<E>, Self::HelpSponge, Parameters = <Self::HelpSponge as CryptographicSponge>::Parameters>;
 }
 
 /// A PCD that does not rely on SNARKs but instead builds on an R1CS NARK construction and its
@@ -121,6 +116,8 @@ where
     MainAffine<E>: Absorb,
     HelpAffine<E>: Absorb,
     PC: R1CSNarkPCDConfig<E>,
+    <PC::MainSponge as CryptographicSponge>::Parameters: CryptographicSpongeParameters,
+    <PC::HelpSponge as CryptographicSponge>::Parameters: CryptographicSpongeParameters,
 {
     _curve_cycle_phantom: PhantomData<E>,
     _config_phantom: PhantomData<PC>,
@@ -134,6 +131,8 @@ where
     MainAffine<E>: Absorb,
     HelpAffine<E>: Absorb,
     PC: R1CSNarkPCDConfig<E>,
+    <PC::MainSponge as CryptographicSponge>::Parameters: CryptographicSpongeParameters,
+    <PC::HelpSponge as CryptographicSponge>::Parameters: CryptographicSpongeParameters,
 {
     type ProvingKey = ProvingKey<E>;
     type VerifyingKey = VerifyingKey<E>;
@@ -357,8 +356,7 @@ where
                     _config_phantom: PhantomData,
                 };
 
-                let params = PC::HelpSponge::default_params();
-                let help_sponge = PC::HelpSponge::new(&params);
+                let help_sponge = PC::HelpSponge::from_rate(SPONGE_RATE);
                 let main_nark_sponge =
                     ASForR1CSNark::<MainAffine<E>, PC::HelpSponge>::nark_sponge(&help_sponge);
 
@@ -446,8 +444,7 @@ where
                     _predicate_phantom: PhantomData,
                 };
 
-                let params = PC::MainSponge::default_params();
-                let main_sponge = PC::MainSponge::new(&params);
+                let main_sponge = PC::MainSponge::from_rate(SPONGE_RATE);
                 let help_nark_sponge =
                     ASForR1CSNark::<HelpAffine<E>, PC::MainSponge>::nark_sponge(&main_sponge);
 
@@ -491,8 +488,7 @@ where
         proof: &Self::Proof,
     ) -> Result<bool, Error> {
         let main_nark_verify = {
-            let params = PC::HelpSponge::default_params();
-            let help_sponge = PC::HelpSponge::new(&params);
+            let help_sponge = PC::HelpSponge::from_rate(SPONGE_RATE);
             let main_nark_sponge =
                 ASForR1CSNark::<MainAffine<E>, PC::HelpSponge>::nark_sponge(&help_sponge);
 
@@ -509,8 +505,7 @@ where
         };
 
         let help_nark_verify = {
-            let params = PC::MainSponge::default_params();
-            let main_sponge = PC::MainSponge::new(&params);
+            let main_sponge = PC::MainSponge::from_rate(SPONGE_RATE);
             let help_nark_sponge =
                 ASForR1CSNark::<HelpAffine<E>, PC::MainSponge>::nark_sponge(&main_sponge);
 
@@ -574,6 +569,8 @@ where
     MainAffine<E>: Absorb,
     HelpAffine<E>: Absorb,
     PC: R1CSNarkPCDConfig<E>,
+    <PC::MainSponge as CryptographicSponge>::Parameters: CryptographicSpongeParameters,
+    <PC::HelpSponge as CryptographicSponge>::Parameters: CryptographicSpongeParameters,
 {
 }
 
@@ -603,7 +600,8 @@ pub mod tests {
     }
 
     pub struct TestConfig {}
-    impl R1CSNarkPCDConfig<TestCycle> for TestConfig {
+    impl R1CSNarkPCDConfig<TestCycle> for TestConfig
+     {
         type MainCurveVar = MainCurveVar;
         type HelpCurveVar = HelpCurveVar;
         type MainSponge = MainSponge;

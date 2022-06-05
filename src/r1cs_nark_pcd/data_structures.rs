@@ -11,6 +11,9 @@ pub(crate) type HelpField<E> = <<E as CurveCycle>::E2 as AffineCurve>::ScalarFie
 pub(crate) type MainProjective<E> = <MainAffine<E> as AffineCurve>::Projective;
 pub(crate) type HelpProjective<E> = <HelpAffine<E> as AffineCurve>::Projective;
 
+// TODO: fix
+pub(crate) const SPONGE_RATE: usize = 4;
+
 /// The proving key of [`R1CSNarkPCD`][nark_pcd].
 ///
 /// [nark_pcd]: crate::r1cs_nark_pcd::R1CSNarkPCD

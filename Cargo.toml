@@ -41,7 +41,7 @@ derivative = { version = "2.0", features = ["use_core"] }
 
 ark-groth16 = { version = "^0.3.0", features = [ "r1cs" ], default-features = false }
 ark-gm17 = { version = "^0.3.0", features = [ "r1cs" ], default-features = false }
-ark-marlin = { git = "https://github.com/arkworks-rs/marlin", branch = "vlopes11/constraints", default-features = false }
+ark-marlin = { git = "https://github.com/arkworks-rs/marlin", branch = "vlopes11/constraints-sponge-rate", default-features = false }
 ark-poly-commit = { git = "https://github.com/arkworks-rs/poly-commit", branch = "constraints", default-features = false, features = [ "r1cs" ] }
 
 tracing = { version = "0.1", default-features = false, features = [ "attributes" ] }
