@@ -1,4 +1,4 @@
-use crate::r1cs_nark_pcd::data_structures::{HelpAffine, HelpField, MainAffine, MainField};
+use crate::r1cs_nark_pcd::data_structures::{HelpAffine, HelpField, MainAffine, MainField, SPONGE_RATE};
 use crate::r1cs_nark_pcd::help_circuit::HelpCircuit;
 use crate::r1cs_nark_pcd::{R1CSNarkPCDConfig, MAKE_ZK};
 use crate::PCDPredicate;
@@ -10,6 +10,7 @@ use ark_accumulation::r1cs_nark_as::constraints::{
 use ark_accumulation::r1cs_nark_as::{AccumulatorInstance, InputInstance};
 use ark_ec::CurveCycle;
 use ark_ff::{PrimeField, Zero};
+use ark_marlin::sponge::{CryptographicSpongeParameters, CryptographicSpongeWithRate};
 use ark_r1cs_std::alloc::AllocVar;
 use ark_r1cs_std::bits::boolean::Boolean;
 use ark_r1cs_std::eq::EqGadget;
@@ -19,7 +20,7 @@ use ark_relations::r1cs::{
     ConstraintSynthesizer, ConstraintSystem, ConstraintSystemRef, SynthesisError,
 };
 use ark_sponge::constraints::CryptographicSpongeVar;
-use ark_sponge::{absorb, absorb_gadget, Absorbable, CryptographicSponge};
+use ark_sponge::{absorb, absorb_gadget, Absorb, CryptographicSponge};
 use ark_std::marker::PhantomData;
 
 /// A circuit used to verify that the accumulation of arguments about the help circuit was computed
@@ -29,12 +30,14 @@ use ark_std::marker::PhantomData;
 pub(crate) struct MainCircuit<E, PC, P>
 where
     E: CurveCycle,
-    MainField<E>: PrimeField + Absorbable<MainField<E>>,
-    HelpField<E>: PrimeField + Absorbable<HelpField<E>>,
-    MainAffine<E>: Absorbable<HelpField<E>>,
-    HelpAffine<E>: Absorbable<MainField<E>>,
+    MainField<E>: PrimeField + Absorb,
+    HelpField<E>: PrimeField + Absorb,
+    MainAffine<E>: Absorb,
+    HelpAffine<E>: Absorb,
     PC: R1CSNarkPCDConfig<E>,
     P: PCDPredicate<MainField<E>>,
+    <PC::MainSponge as CryptographicSponge>::Parameters: CryptographicSpongeParameters,
+    <PC::HelpSponge as CryptographicSponge>::Parameters: CryptographicSpongeParameters,
 {
     /// The PCD predicate.
     pub(crate) predicate: P,
@@ -74,12 +77,14 @@ where
 impl<E, PC, P> MainCircuit<E, PC, P>
 where
     E: CurveCycle,
-    MainField<E>: PrimeField + Absorbable<MainField<E>>,
-    HelpField<E>: PrimeField + Absorbable<HelpField<E>>,
-    MainAffine<E>: Absorbable<HelpField<E>>,
-    HelpAffine<E>: Absorbable<MainField<E>>,
+    MainField<E>: PrimeField + Absorb,
+    HelpField<E>: PrimeField + Absorb,
+    MainAffine<E>: Absorb,
+    HelpAffine<E>: Absorb,
     PC: R1CSNarkPCDConfig<E>,
     P: PCDPredicate<MainField<E>>,
+    <PC::MainSponge as CryptographicSponge>::Parameters: CryptographicSpongeParameters,
+    <PC::HelpSponge as CryptographicSponge>::Parameters: CryptographicSpongeParameters,
 {
     /// Returns the public input size of the main circuit.
     pub(crate) fn public_input_size() -> usize {
@@ -94,7 +99,7 @@ where
         help_accumulator_instance: &AccumulatorInstance<HelpAffine<E>>,
         msg: &P::Message,
     ) -> MainField<E> {
-        let mut sponge = PC::MainSponge::new();
+        let mut sponge = PC::MainSponge::from_rate(SPONGE_RATE);
         absorb!(&mut sponge, help_avk, help_accumulator_instance, msg);
         sponge.squeeze_field_elements(1).pop().unwrap()
     }
@@ -106,7 +111,8 @@ where
         help_accumulator_instance_var: &AccumulatorInstanceVar<HelpAffine<E>, PC::HelpCurveVar>,
         msg_var: &P::MessageVar,
     ) -> Result<FpVar<MainField<E>>, SynthesisError> {
-        let mut sponge = PC::MainSpongeVar::new(cs);
+        let sponge_params = <PC::MainSponge as CryptographicSponge>::Parameters::from_rate(SPONGE_RATE);
+        let mut sponge = PC::MainSpongeVar::new(cs, &sponge_params);
         absorb_gadget!(
             &mut sponge,
             help_avk_var,
@@ -136,12 +142,14 @@ where
 impl<E, PC, P> ConstraintSynthesizer<MainField<E>> for MainCircuit<E, PC, P>
 where
     E: CurveCycle,
-    MainField<E>: PrimeField + Absorbable<MainField<E>>,
-    HelpField<E>: PrimeField + Absorbable<HelpField<E>>,
-    MainAffine<E>: Absorbable<HelpField<E>>,
-    HelpAffine<E>: Absorbable<MainField<E>>,
+    MainField<E>: PrimeField + Absorb,
+    HelpField<E>: PrimeField + Absorb,
+    MainAffine<E>: Absorb,
+    HelpAffine<E>: Absorb,
     PC: R1CSNarkPCDConfig<E>,
     P: PCDPredicate<MainField<E>>,
+    <PC::MainSponge as CryptographicSponge>::Parameters: CryptographicSpongeParameters,
+    <PC::HelpSponge as CryptographicSponge>::Parameters: CryptographicSpongeParameters,
 {
     fn generate_constraints(
         self,
@@ -291,6 +299,8 @@ where
 
         input_hash_var.enforce_equal(&claimed_input_hash_var)?;
 
+        let sponge_params = <PC::MainSponge as CryptographicSponge>::Parameters::from_rate(SPONGE_RATE);
+        let main_sponge = PC::MainSpongeVar::new(cs.clone(), &sponge_params);
         let as_verify = ASForR1CSNarkVerifierGadget::<
             HelpAffine<E>,
             PC::HelpCurveVar,
@@ -303,7 +313,7 @@ where
             &help_old_accumulator_instance_vars,
             &help_new_accumulator_instance_var,
             &help_accumulation_proof_var,
-            None,
+            Some(main_sponge),
         )?;
 
         base_case_var

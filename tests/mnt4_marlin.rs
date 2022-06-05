@@ -5,10 +5,10 @@ use ark_ec::{CurveCycle, PairingEngine, PairingFriendlyCycle};
 use ark_ed_on_mnt4_298::EdwardsParameters;
 use ark_ff::{One, PrimeField};
 use ark_marlin::constraints::snark::{MarlinSNARK, MarlinSNARKGadget};
+use ark_sponge::poseidon::constraints::PoseidonSpongeVar;
+use ark_sponge::poseidon::PoseidonSponge;
 use ark_marlin::fiat_shamir::constraints::FiatShamirAlgebraicSpongeRngVar;
-use ark_marlin::fiat_shamir::poseidon::constraints::PoseidonSpongeVar;
-use ark_marlin::fiat_shamir::poseidon::PoseidonSponge;
-use ark_marlin::fiat_shamir::FiatShamirAlgebraicSpongeRng;
+use ark_marlin::fiat_shamir::FiatShamirRng;
 use ark_marlin::MarlinConfig;
 use ark_mnt4_298::constraints::PairingVar as MNT4PairingVar;
 use ark_mnt4_298::{Fq, Fr, MNT4_298};
@@ -25,7 +25,7 @@ use ark_r1cs_std::eq::EqGadget;
 use ark_r1cs_std::fields::fp::FpVar;
 use ark_relations::r1cs::ConstraintSystemRef;
 use ark_relations::r1cs::SynthesisError;
-use ark_sponge::Absorbable;
+use ark_sponge::Absorb;
 use core::marker::PhantomData;
 use rand_chacha::ChaChaRng;
 
@@ -114,7 +114,7 @@ impl<F: PrimeField> Clone for TestPredicate<F> {
     }
 }
 
-impl<F: PrimeField + Absorbable<F>> PCDPredicate<F> for TestPredicate<F> {
+impl<F: PrimeField + Absorb> PCDPredicate<F> for TestPredicate<F> {
     type Message = F;
     type MessageVar = FpVar<F>;
     type LocalWitness = F;
