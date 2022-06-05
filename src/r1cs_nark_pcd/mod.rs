@@ -317,6 +317,7 @@ where
                     witness: &proof.help_accumulator.1,
                 });
 
+                let main_sponge = PC::MainSponge::from_rate(SPONGE_RATE);
                 ASForR1CSNark::<HelpAffine<E>, PC::MainSponge>::prove(
                     &pk.help_apk,
                     help_accumulation_input_refs,
@@ -326,7 +327,7 @@ where
                     } else {
                         MakeZK::Disabled
                     },
-                    None,
+                    Some(main_sponge),
                 )?
             };
 
@@ -409,6 +410,7 @@ where
                     witness: &proof.main_accumulator.1,
                 });
 
+                let help_sponge = PC::HelpSponge::from_rate(SPONGE_RATE);
                 ASForR1CSNark::<MainAffine<E>, PC::HelpSponge>::prove(
                     &pk.main_apk,
                     main_accumulation_input_refs,
@@ -418,7 +420,7 @@ where
                     } else {
                         MakeZK::Disabled
                     },
-                    None,
+                    Some(help_sponge),
                 )?
             };
 
@@ -530,10 +532,11 @@ where
                 witness: &proof.main_accumulator.1,
             };
 
+            let help_sponge = PC::HelpSponge::from_rate(SPONGE_RATE);
             ASForR1CSNark::<MainAffine<E>, PC::HelpSponge>::decide(
                 &vk.main_ivk,
                 main_accumulator_ref,
-                None,
+                Some(help_sponge),
             )?
         };
 
@@ -547,10 +550,11 @@ where
                 witness: &proof.help_accumulator.1,
             };
 
+            let main_sponge = PC::MainSponge::from_rate(SPONGE_RATE);
             ASForR1CSNark::<HelpAffine<E>, PC::MainSponge>::decide(
                 &vk.help_ivk,
                 help_accumulator_ref,
-                None,
+                Some(main_sponge),
             )?
         };
 

@@ -251,6 +251,8 @@ where
 
         input_hash_var.enforce_equal(&claimed_input_hash_var)?;
 
+        let sponge_params = <PC::HelpSponge as CryptographicSponge>::Parameters::from_rate(SPONGE_RATE);
+        let help_sponge = PC::HelpSpongeVar::new(cs.clone(), &sponge_params);
         let as_verify = ASForR1CSNarkVerifierGadget::<
             MainAffine<E>,
             PC::MainCurveVar,
@@ -263,7 +265,7 @@ where
             &main_old_accumulator_instance_vars,
             &main_new_accumulator_instance_var,
             &main_accumulation_proof_var,
-            None,
+            Some(help_sponge),
         )?;
 
         base_case_var
